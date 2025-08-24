@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Dashboard</h2>
+<p>Quick actions:</p>
+<ul>
+  {% for sub in subjects %}
+    <li><a href="{{ url_for('topper', subject=sub) }}">Topper in {{ sub }}</a></li>
+    <li><a href="{{ url_for('class_avg', subject=sub) }}">Class Average in {{ sub }}</a></li>
+  {% endfor %}
+</ul>
+
+<h3>Students</h3>
+<ul>
+  {% for s in students %}
+    <li>
+      <a href="{{ url_for('student_details', roll=s.roll_number) }}">
+        {{ s.roll_number }} — {{ s.name }}
+      </a>
+      {% if s.average() is not none %} (Avg: {{ '%.2f'|format(s.average()) }}){% endif %}
+    </li>
+  {% else %}
+    <li>No students yet.</li>
+  {% endfor %}
+</ul>
+{% endblock %}

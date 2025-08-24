@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Student Details</h2>
+<p><strong>Name:</strong> {{ s.name }}</p>
+<p><strong>Roll Number:</strong> {{ s.roll_number }}</p>
+
+<h3>Grades</h3>
+<table>
+  <thead><tr><th>Subject</th><th>Score</th></tr></thead>
+  <tbody>
+    {% for subject, score in s.grades_dict.items() %}
+      <tr><td>{{ subject }}</td><td>{{ score }}</td></tr>
+    {% else %}
+      <tr><td colspan="2">No grades yet.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+{% if s.average() is not none %}
+  <p><strong>Average:</strong> {{ '%.2f'|format(s.average()) }}</p>
+  <p><a href="{{ url_for('average', roll=s.roll_number) }}">Recalculate Average</a></p>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,102 @@
+# app.py
+from flask import Flask, render_template, request, redirect, url_for, flash
+from models import db
+from tracker import StudentTracker
+from config import DATABASE_URI
+
+def create_app():
+    app = Flask(__name__)
+    app.config["SQLALCHEMY_DATABASE_URI"] = DATABASE_URI
+    app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+    app.secret_key = "change-me"  # set from env in prod
+    db.init_app(app)
+    with app.app_context():
+        db.create_all()
+    return app
+
+app = create_app()
+tracker = StudentTracker()
+
+@app.route("/")
+def index():
+    students = tracker.list_students()
+    return render_template("index.html", students=students, subjects=StudentTracker.VALID_SUBJECTS)
+
+@app.route("/students")
+def students():
+    students = tracker.list_students()
+    return render_template("students.html", students=students)
+
+@app.route("/student/<roll>")
+def student_details(roll):
+    w = tracker.view_student_details(roll)
+    if not w:
+        flash("Student not found.", "danger")
+        return redirect(url_for("students"))
+    return render_template("student_details.html", s=w)
+
+@app.route("/add-student", methods=["GET", "POST"])
+def add_student():
+    if request.method == "POST":
+        name = request.form.get("name", "").strip()
+        roll = request.form.get("roll", "").strip()
+        if not name or not roll:
+            flash("Name and roll number are required.", "warning")
+            return redirect(url_for("add_student"))
+        if tracker.add_student(name, roll):
+            flash("Student added.", "success")
+            return redirect(url_for("students"))
+        else:
+            flash("Roll number already exists.", "danger")
+            return redirect(url_for("add_student"))
+    return render_template("add_student.html")
+
+@app.route("/add-grade", methods=["GET", "POST"])
+def add_grade():
+    if request.method == "POST":
+        roll = request.form.get("roll", "").strip()
+        subject = request.form.get("subject", "").strip()
+        try:
+            score = float(request.form.get("score", ""))
+        except ValueError:
+            flash("Enter a valid score.", "warning")
+            return redirect(url_for("add_grade"))
+        if tracker.add_grade(roll, subject, score):
+            flash("Grade saved.", "success")
+            return redirect(url_for("student_details", roll=roll))
+        else:
+            flash("Invalid input or student not found.", "danger")
+            return redirect(url_for("add_grade"))
+    students = tracker.list_students()
+    return render_template("add_grade.html", students=students, subjects=StudentTracker.VALID_SUBJECTS)
+
+@app.route("/average/<roll>")
+def average(roll):
+    avg = tracker.calculate_average(roll)
+    if avg is None:
+        flash("Student not found or no grades.", "warning")
+        return redirect(url_for("students"))
+    flash(f"Average for {roll} is {avg:.2f}", "info")
+    return redirect(url_for("student_details", roll=roll))
+
+# ---- optional bonus routes ----
+@app.route("/report/topper/<subject>")
+def topper(subject):
+    res = tracker.subject_topper(subject)
+    if not res:
+        flash("No grades for that subject yet.", "warning")
+        return redirect(url_for("index"))
+    flash(f"Topper in {subject}: {res['name']} ({res['roll_number']}) - {res['score']}", "success")
+    return redirect(url_for("index"))
+
+@app.route("/report/class-average/<subject>")
+def class_avg(subject):
+    avg = tracker.class_average_for_subject(subject)
+    if avg is None:
+        flash("No grades for that subject yet.", "warning")
+    else:
+        flash(f"Class average in {subject}: {avg:.2f}", "info")
+    return redirect(url_for("index"))
+
+if __name__ == "__main__":
+    app.run(debug=True)

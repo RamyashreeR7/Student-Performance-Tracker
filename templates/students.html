@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>All Students</h2>
+<table>
+  <thead><tr><th>Roll No</th><th>Name</th><th>Average</th><th>Details</th></tr></thead>
+  <tbody>
+    {% for s in students %}
+      <tr>
+        <td>{{ s.roll_number }}</td>
+        <td>{{ s.name }}</td>
+        <td>{{ '%.2f'|format(s.average()) if s.average() is not none else '-' }}</td>
+        <td><a href="{{ url_for('student_details', roll=s.roll_number) }}">View</a></td>
+      </tr>
+    {% else %}
+      <tr><td colspan="4">No students yet.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

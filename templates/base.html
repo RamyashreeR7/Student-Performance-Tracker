@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Student Performance Tracker</title>
+  <link rel="stylesheet" href="https://cdn.simplecss.org/simple.min.css">
+</head>
+<body>
+<header>
+  <h1>Student Performance Tracker</h1>
+  <nav>
+    <a href="{{ url_for('index') }}">Home</a>
+    <a href="{{ url_for('students') }}">Students</a>
+    <a href="{{ url_for('add_student') }}">Add Student</a>
+    <a href="{{ url_for('add_grade') }}">Add Grade</a>
+  </nav>
+</header>
+
+<main>
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      {% for category, msg in messages %}
+        <div class="{{ category }}">{{ msg }}</div>
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
+  {% block content %}{% endblock %}
+</main>
+
+<footer>
+  <small>&copy; {{ 2025 }} Student Tracker</small>
+</footer>
+</body>
+</html>
