@@ -4,8 +4,18 @@
 <p>Quick actions:</p>
 <ul>
   {% for sub in subjects %}
-    <li><a href="{{ url_for('topper', subject=sub) }}">Topper in {{ sub }}</a></li>
-    <li><a href="{{ url_for('class_avg', subject=sub) }}">Class Average in {{ sub }}</a></li>
+    <li>
+      <a href="{{ url_for('topper', subject=sub) }}">Topper in {{ sub }}</a>
+      {% if topper_results[sub] %}
+        <p><strong>{{ topper_results[sub] }}</strong></p>
+      {% endif %}
+    </li>
+    <li>
+      <a href="{{ url_for('class_avg', subject=sub) }}">Class Average in {{ sub }}</a>
+      {% if avg_results[sub] %}
+        <p><em>{{ avg_results[sub] }}</em></p>
+      {% endif %}
+    </li>
   {% endfor %}
 </ul>
 

@@ -83,20 +83,39 @@ def average(roll):
 @app.route("/report/topper/<subject>")
 def topper(subject):
     res = tracker.subject_topper(subject)
-    if not res:
-        flash("No grades for that subject yet.", "warning")
-        return redirect(url_for("index"))
-    flash(f"Topper in {subject}: {res['name']} ({res['roll_number']}) - {res['score']}", "success")
-    return redirect(url_for("index"))
+    students = tracker.list_students()
+
+    topper_results = {s: None for s in StudentTracker.VALID_SUBJECTS}
+    if res:
+        topper_results[subject] = f"Topper in {subject}: {res['name']} ({res['roll_number']}) - {res['score']}"
+    else:
+        topper_results[subject] = f"No topper available for {subject} yet."
+
+    return render_template("index.html",
+                           students=students,
+                           subjects=StudentTracker.VALID_SUBJECTS,
+                           topper_results=topper_results,
+                           avg_results={s: None for s in StudentTracker.VALID_SUBJECTS})
+
 
 @app.route("/report/class-average/<subject>")
 def class_avg(subject):
     avg = tracker.class_average_for_subject(subject)
-    if avg is None:
-        flash("No grades for that subject yet.", "warning")
+    students = tracker.list_students()
+
+    avg_results = {s: None for s in StudentTracker.VALID_SUBJECTS}
+    if avg is not None:
+        avg_results[subject] = f"Class average in {subject}: {avg:.2f}"
     else:
-        flash(f"Class average in {subject}: {avg:.2f}", "info")
-    return redirect(url_for("index"))
+        avg_results[subject] = f"No average available for {subject} yet."
+
+    return render_template("index.html",
+                           students=students,
+                           subjects=StudentTracker.VALID_SUBJECTS,
+                           topper_results={s: None for s in StudentTracker.VALID_SUBJECTS},
+                           avg_results=avg_results)
+
+
 
 if __name__ == "__main__":
     app.run(debug=True)
