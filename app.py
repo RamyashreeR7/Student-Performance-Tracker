@@ -1,6 +1,6 @@
 # app.py
 from flask import Flask, render_template, request, redirect, url_for, flash
-from models import db
+from models import db, Student, Grade
 from tracker import StudentTracker
 from config import DATABASE_URI
 
@@ -20,7 +20,22 @@ tracker = StudentTracker()
 @app.route("/")
 def index():
     students = tracker.list_students()
-    return render_template("index.html", students=students, subjects=StudentTracker.VALID_SUBJECTS)
+    topper_results = {}
+    avg_results = {}
+
+    for sub in StudentTracker.VALID_SUBJECTS:
+        topper = max(students, key=lambda s: s.grades_dict.get(sub, 0)) if students else None
+        topper_results[sub] = topper.name if topper else "N/A"
+        avg_results[sub] = None
+
+    return render_template(
+        "index.html",
+        students=students,
+        subjects=StudentTracker.VALID_SUBJECTS,
+        topper_results=topper_results,
+        avg_results=avg_results
+    )
+
 
 @app.route("/students")
 def students():
