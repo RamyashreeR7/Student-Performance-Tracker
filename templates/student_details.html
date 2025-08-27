@@ -20,4 +20,12 @@
   <p><strong>Average:</strong> {{ '%.2f'|format(s.average()) }}</p>
   <p><a href="{{ url_for('average', roll=s.roll_number) }}">Recalculate Average</a></p>
 {% endif %}
+
+<div style="margin-top: 20px;">
+  <form method="POST" action="{{ url_for('delete_student', roll=s.roll_number) }}" style="display:inline;" 
+        onsubmit="return confirm('Are you sure you want to delete student {{ s.name }} ({{ s.roll_number }})? This will also delete all their grades.')">
+    <button type="submit" style="background-color: #dc3545; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; margin-right: 10px;">Delete Student</button>
+  </form>
+  <a href="{{ url_for('students') }}" style="text-decoration: none; background-color: #6c757d; color: white; padding: 8px 16px; border-radius: 4px;">Back to Students</a>
+</div>
 {% endblock %}

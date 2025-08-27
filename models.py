@@ -13,6 +13,14 @@ class Student(db.Model):
     def __repr__(self):
         return f"<Student {self.roll_number} - {self.name}>"
 
+class Subject(db.Model):
+    __tablename__ = "subjects"
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(64), unique=True, nullable=False)
+
+    def __repr__(self):
+        return f"<Subject {self.name}>"
+
 class Grade(db.Model):
     __tablename__ = "grades"
     id = db.Column(db.Integer, primary_key=True)

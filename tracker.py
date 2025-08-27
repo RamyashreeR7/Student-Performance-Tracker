@@ -1,7 +1,7 @@
 # tracker.py
 from typing import Optional, Dict, List
 from statistics import mean
-from models import db, Student, Grade
+from models import db, Student, Grade, Subject
 
 # --- OOP API ---
 
@@ -28,7 +28,6 @@ class StudentWrapper:
 
 class StudentTracker:
     """Manages students + grades, backed by SQLAlchemy (SQLite)."""
-    VALID_SUBJECTS = ["Math", "Science", "English"]  # extend as needed
 
     # ---- helpers ----
     def _get_student_row(self, roll_number: str) -> Optional[Student]:
@@ -49,8 +48,6 @@ class StudentTracker:
     def add_grade(self, roll_number: str, subject: str, score: float) -> bool:
         row = self._get_student_row(roll_number)
         if row is None:
-            return False
-        if subject not in self.VALID_SUBJECTS:
             return False
         if not (0 <= score <= 100):
             return False
@@ -87,3 +84,41 @@ class StudentTracker:
 
     def list_students(self) -> List[StudentWrapper]:
         return [StudentWrapper(s) for s in Student.query.order_by(Student.roll_number).all()]
+
+    def delete_student(self, roll_number: str) -> bool:
+        """Delete a student and all associated grades."""
+        row = self._get_student_row(roll_number)
+        if row is None:
+            return False
+        db.session.delete(row)
+        db.session.commit()
+        return True
+
+    # ---- subject management ----
+    def add_subject(self, name: str) -> bool:
+        """Add a new subject."""
+        name = name.strip()
+        if not name:
+            return False
+        if Subject.query.filter_by(name=name).first():
+            return False  # Subject already exists
+        subject = Subject(name=name)
+        db.session.add(subject)
+        db.session.commit()
+        return True
+
+    def get_subjects(self) -> List[str]:
+        """Get all available subjects."""
+        subjects = Subject.query.order_by(Subject.name).all()
+        return [s.name for s in subjects]
+
+    def delete_subject(self, name: str) -> bool:
+        """Delete a subject and all associated grades."""
+        subject = Subject.query.filter_by(name=name).first()
+        if not subject:
+            return False
+        # Delete all grades for this subject
+        Grade.query.filter_by(subject=name).delete()
+        db.session.delete(subject)
+        db.session.commit()
+        return True

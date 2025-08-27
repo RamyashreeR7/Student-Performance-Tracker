@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Add Subject</h2>
+<form method="post">
+  <label>Subject Name <input type="text" name="name" required placeholder="Enter subject name"></label>
+  <button type="submit">Add Subject</button>
+</form>
+<p><a href="{{ url_for('index') }}">Back to Dashboard</a></p>
+{% endblock %}
